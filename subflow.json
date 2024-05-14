@@ -1,0 +1,204 @@
+{
+    "id": "83d73bc419678fdc",
+    "type": "subflow",
+    "name": "create",
+    "info": "Creates Plotly.js chart to be used in Node-RED Dashboard 2.0.\r\n\r\nConfig and layout can be configured.\r\n\r\nInput for this node should be either\r\n1. Dashboard 2.0 UI control node output \r\n2. Message payload with value \"reload\"\r\n\r\nThis node outputs Plotly.js chart for \"tequ-node-red-plotly-add\"-node.",
+    "category": "Plotly",
+    "in": [
+        {
+            "x": 60,
+            "y": 80,
+            "wires": [
+                {
+                    "id": "11466d0b8fefc464"
+                }
+            ]
+        }
+    ],
+    "out": [
+        {
+            "x": 560,
+            "y": 80,
+            "wires": [
+                {
+                    "id": "b8ecba2191fe104f",
+                    "port": 0
+                }
+            ]
+        }
+    ],
+    "env": [
+        {
+            "name": "chart_name",
+            "type": "str",
+            "value": "m1_chart",
+            "ui": {
+                "label": {
+                    "en-US": "Name"
+                },
+                "type": "input",
+                "opts": {
+                    "types": [
+                        "str"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "delay",
+            "type": "num",
+            "value": "100",
+            "ui": {
+                "label": {
+                    "en-US": "Delay"
+                },
+                "type": "spinner",
+                "opts": {
+                    "min": 10,
+                    "max": 200
+                }
+            }
+        },
+        {
+            "name": "config",
+            "type": "json",
+            "value": "{\"responsive\":true,\"scrollZoom\":false,\"modeBarButtonsToRemove\":[\"zoomIn2d\",\"zoomOut2d\"]}",
+            "ui": {
+                "label": {
+                    "en-US": "Config"
+                },
+                "type": "input",
+                "opts": {
+                    "types": [
+                        "json"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "layout",
+            "type": "json",
+            "value": "{\"title\":\"Machine 1\",\"showlegend\":true,\"autosize\":true,\"dragmode\":false,\"hovermode\":\"x unified\",\"hoverlabel\":{\"namelength\":-1,\"bgcolor\":\"rgb(255,255,255)\",\"bordercolor\":\"rgb(0,0,0)\",\"font\":{\"color\":\"rgb(0,0,0)\",\"family\":\"Helvetica\",\"size\":12},\"grouptitlefont\":{\"family\":\"Helvetica\",\"size\":12}},\"margin\":{\"l\":35,\"r\":0,\"t\":50,\"b\":50},\"legend\":{\"orientation\":\"h\",\"font\":{\"color\":\"rgb(0, 0,0)\",\"family\":\"Helvetica\",\"size\":10}},\"xaxis\":{\"autorange\":true,\"hoverformat\":\"%a %e.%-m.%y klo %H:%M:%S\"},\"yaxis\":{\"autorange\":true,\"type\":\"linear\",\"ticksuffix\":\" °C\",\"hoverformat\":\".1f\",\"titlefont\":{\"size\":12,\"family\":\"Helvetica\",\"color\":\"rgb(0,0,0)\"},\"tickfont\":{\"size\":12,\"family\":\"Helvetica\",\"color\":\"rgb(0,0,0)\"}}}",
+            "ui": {
+                "label": {
+                    "en-US": "Layout"
+                },
+                "type": "input",
+                "opts": {
+                    "types": [
+                        "json"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "page",
+            "type": "str",
+            "value": "Room control",
+            "ui": {
+                "label": {
+                    "en-US": "Dashboard page"
+                },
+                "type": "input",
+                "opts": {
+                    "types": [
+                        "str"
+                    ]
+                }
+            }
+        }
+    ],
+    "meta": {
+        "module": "tequ-node-red-plotly-create",
+        "version": "0.0.1",
+        "author": "juha.autioniemi@lapinamk.fi",
+        "desc": "Create Plotly.js chart.",
+        "license": "MIT"
+    },
+    "color": "#3FADB5",
+    "inputLabels": [
+        "UI control in"
+    ],
+    "outputLabels": [
+        "Plotly chart out"
+    ],
+    "icon": "font-awesome/fa-line-chart",
+    "status": {
+        "x": 500,
+        "y": 180,
+        "wires": [
+            {
+                "id": "69bdf6d236031436",
+                "port": 0
+            }
+        ]
+    },
+    "flow": [
+        {
+            "id": "11466d0b8fefc464",
+            "type": "function",
+            "z": "83d73bc419678fdc",
+            "name": "Create",
+            "func": "let page = msg.name;\nlet target_page = env.get(\"page\")\nlet action = msg.payload;\nlet chart_name = env.get(\"chart_name\");\nlet config = env.get(\"config\");\nlet layout = env.get(\"layout\");\nlet delay = env.get(\"delay\");\n\nfunction createMessage(chart_name, message_delay){\n    let dataArray = []\n    let traces = global.get(chart_name) || {}\n\n    for (let value in traces) {\n        dataArray.push(traces[value])\n    }\n\n    let plotly = {\n        \"data\": dataArray,\n        \"config\": config,\n        \"layout\": layout,\n    }\n\n    msg.payload = plotly;\n    msg.action = \"create\";\n    msg.delay = message_delay;\n    msg.chart_name = chart_name;\n    node.send([msg])\n}\n\nif (action == \"change\" && page == target_page){\n    node.status({ fill: \"blue\", shape: \"dot\", text: \"Change | \"+ chart_name });   \n    createMessage(chart_name, delay);\n}\nelse if(action == \"connect\"){\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Connect | \" + chart_name }); \n    createMessage(chart_name, delay * 5);\n}\nelse if (action == \"reload\") {\n    node.status({ fill: \"yellow\", shape: \"dot\", text: \"Reload | \" + chart_name });\n    createMessage(chart_name, delay);\n}\nelse{\n    //do nothing\n}",
+            "outputs": 1,
+            "timeout": 0,
+            "noerr": 0,
+            "initialize": "",
+            "finalize": "",
+            "libs": [],
+            "x": 190,
+            "y": 80,
+            "wires": [
+                [
+                    "b8ecba2191fe104f"
+                ]
+            ]
+        },
+        {
+            "id": "b8ecba2191fe104f",
+            "type": "delay",
+            "z": "83d73bc419678fdc",
+            "name": "100ms",
+            "pauseType": "delay",
+            "timeout": "500",
+            "timeoutUnits": "milliseconds",
+            "rate": "1",
+            "nbRateUnits": "1",
+            "rateUnits": "second",
+            "randomFirst": "1",
+            "randomLast": "5",
+            "randomUnits": "seconds",
+            "drop": false,
+            "allowrate": false,
+            "outputs": 1,
+            "x": 370,
+            "y": 80,
+            "wires": [
+                []
+            ]
+        },
+        {
+            "id": "69bdf6d236031436",
+            "type": "status",
+            "z": "83d73bc419678fdc",
+            "name": "",
+            "scope": null,
+            "x": 360,
+            "y": 180,
+            "wires": [
+                []
+            ]
+        },
+        {
+            "id": "79b618028073ea09",
+            "type": "subflow:83d73bc419678fdc",
+            "z": "37f93c27a1c435dd",
+            "name": "",
+            "x": 330,
+            "y": 1140,
+            "wires": [
+                []
+            ]
+        }
+    ]
+}
