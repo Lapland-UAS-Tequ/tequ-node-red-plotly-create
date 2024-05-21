@@ -19,4 +19,7 @@ Input for this node should be either
 1. Dashboard 2.0 UI control node output 
 2. Message payload with value "reload"
 
-This node outputs Plotly.js chart for "tequ-node-red-plotly-add"-node.
+
+This node has two outputs:
+- Output 1 Plotly.js chart settings to add-node
+- Output 2 message to chart-node
