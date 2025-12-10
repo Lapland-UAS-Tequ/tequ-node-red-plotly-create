@@ -2,7 +2,7 @@
     "id": "83d73bc419678fdc",
     "type": "subflow",
     "name": "create",
-    "info": "Creates Plotly.js chart to be used in Node-RED Dashboard 2.0.\r\n\r\nConfig and layout can be configured.\r\n\r\nInput for this node should be either\r\n1. Dashboard 2.0 UI control node output \r\n2. Message payload with value \"reload\"\r\n\r\n\r\nThis node has two outputs:\r\n- Output 1 Plotly.js chart settings to add-node\r\n- Output 2 message to chart-node",
+    "info": "Creates Plotly.js chart to be used in Node-RED Dashboard 2.0.\r\n\r\nConfig and layout can be configured.\r\n\r\nInput for this node should be either\r\n1. Dashboard 2.0 UI control node output \r\n2. Message payload with value \"reload\"\r\n\r\nThis node has one output:\r\n- Message to chart-node",
     "category": "Plotly",
     "in": [
         {
@@ -18,17 +18,7 @@
     "out": [
         {
             "x": 670,
-            "y": 60,
-            "wires": [
-                {
-                    "id": "b8ecba2191fe104f",
-                    "port": 0
-                }
-            ]
-        },
-        {
-            "x": 680,
-            "y": 120,
+            "y": 80,
             "wires": [
                 {
                     "id": "a4997c00a8d2d006",
@@ -87,7 +77,7 @@
             }
         },
         {
-            "name": "page",
+            "name": "target_page",
             "type": "str",
             "value": "Room control",
             "ui": {
@@ -103,25 +93,9 @@
             }
         },
         {
-            "name": "delay_to_add",
-            "type": "num",
-            "value": "200",
-            "ui": {
-                "label": {
-                    "en-US": "Delay to Add"
-                },
-                "type": "input",
-                "opts": {
-                    "types": [
-                        "num"
-                    ]
-                }
-            }
-        },
-        {
             "name": "delay_to_create",
             "type": "num",
-            "value": "10",
+            "value": "50",
             "ui": {
                 "label": {
                     "en-US": "Delay to create"
@@ -137,7 +111,7 @@
     ],
     "meta": {
         "module": "tequ-node-red-plotly-create",
-        "version": "0.0.5",
+        "version": "0.2",
         "author": "juha.autioniemi@lapinamk.fi",
         "desc": "Create Plotly.js chart.",
         "license": "MIT"
@@ -147,13 +121,12 @@
         "UI control in"
     ],
     "outputLabels": [
-        "To add node",
-        "To chart node"
+        "To add node"
     ],
     "icon": "font-awesome/fa-line-chart",
     "status": {
         "x": 620,
-        "y": 220,
+        "y": 180,
         "wires": [
             {
                 "id": "69bdf6d236031436",
@@ -167,8 +140,8 @@
             "type": "function",
             "z": "83d73bc419678fdc",
             "name": "Create",
-            "func": "let page = msg.name;\nlet action = msg.payload;\n//let chart_name = env.get(\"chart_name\");\n//let config = env.get(\"config\");\n//let layout = env.get(\"layout\");\n//let delay = env.get(\"delay\");\n//let target_page = env.get(\"page\")\n\nlet chart_name;\nlet config;\nlet layout;\nlet delay;\nlet target_page;\nlet chart_id;\n\nlet settings = {}\nlet config_values = [\"chart_name\",\"config\",\"layout\",\"delay_to_add\",\"delay_to_create\",\"target_page\"]\n\nfor(let value in config_values){\n\n    let setting = config_values[value]\n\n    settings[setting] = {}\n    if(setting in msg){\n        settings[setting] = msg[setting];\n    }\n    else{\n        settings[setting] = env.get(setting)\n    }\n}\n\n\nfunction createMessage(chart_settings){\n    let dataArray = []\n\n    let traces = global.get(chart_settings[\"chart_name\"]) || {}\n\n    for (let value in traces) {\n        dataArray.push(traces[value])\n    }\n\n    let plotly_chart = {\n        \"data\": dataArray,\n        \"config\": chart_settings[\"config\"],\n        \"layout\": chart_settings[\"layout\"],\n    }\n\n    msg.payload = plotly_chart;\n    msg.action = \"create\";\n    msg.delay = chart_settings[\"delay\"];\n    msg.chart_name = chart_settings[\"chart_name\"];\n    msg.delay = chart_settings[\"delay_to_add\"];\n    node.send([msg,null])\n    msg.delay = chart_settings[\"delay_to_create\"];\n    node.send([null,msg])\n\n}\n\nif (action == \"change\" && page == settings[\"target_page\"]){\n    node.status({ fill: \"blue\", shape: \"dot\", text: \"Change | \" + settings[\"chart_name\"] });   \n    createMessage(settings);\n}\nelse if(action == \"connect\"){\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Connect | \" + settings[\"chart_name\"] }); \n    settings[\"delay\"] = settings[\"delay\"] * 5;\n    createMessage(settings);\n}\nelse if (action == \"reload\") {\n    node.status({ fill: \"yellow\", shape: \"dot\", text: \"Reload | \" + settings[\"chart_name\"] });\n    createMessage(settings);\n}\nelse{\n    //node.status({fill:\"red\",shape:\"dot\",text:\"no action\"});\n    //node.warn(msg)\n    //do nothing\n}",
-            "outputs": 2,
+            "func": "let page = msg.name;\nlet action = msg.payload;\n//let chart_name = env.get(\"chart_name\");\n//let config = env.get(\"config\");\n//let layout = env.get(\"layout\");\n//let delay = env.get(\"delay\");\n//let target_page = env.get(\"page\")\n\nlet chart_name;\nlet config;\nlet layout;\nlet delay;\nlet target_page;\nlet chart_id;\n\nlet settings = {}\nlet config_values = [\"chart_name\",\"config\",\"layout\",\"delay_to_add\",\"delay_to_create\",\"target_page\"]\n\nfor(let value in config_values){\n\n    let setting = config_values[value]\n\n    settings[setting] = {}\n    if(setting in msg){\n        settings[setting] = msg[setting];\n    }\n    else{\n        settings[setting] = env.get(setting)\n    }\n}\n\n\nfunction createMessage(chart_settings){\n    let dataArray = []\n\n    let traces = global.get(chart_settings[\"chart_name\"]) || {}\n\n    for (let value in traces) {\n        dataArray.push(traces[value])\n    }\n\n    let plotly_chart = {\n        \"data\": dataArray,\n        \"config\": chart_settings[\"config\"],\n        \"layout\": chart_settings[\"layout\"],\n    }\n\n    msg.payload = plotly_chart;\n    msg.action = \"create\";\n    msg.delay = chart_settings[\"delay\"];\n    msg.chart_name = chart_settings[\"chart_name\"];\n    msg.delay = chart_settings[\"delay_to_add\"];\n    node.send(msg)\n\n    //msg.delay = chart_settings[\"delay_to_create\"];\n    //node.send([null,msg])\n\n}\n\n//node.warn(page + \" | \"+action+ \" | \"+settings[\"target_page\"])\n\n\nif (action == \"change\" && page == settings[\"target_page\"]){\n    node.status({ fill: \"blue\", shape: \"dot\", text: \"Change | \" + settings[\"chart_name\"] });   \n    createMessage(settings);\n}\nelse if(action == \"connect\"){\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Connect | \" + settings[\"chart_name\"] }); \n    settings[\"delay\"] = settings[\"delay\"] * 5;\n    createMessage(settings);\n}\nelse if (action == \"reload\") {\n    node.status({ fill: \"yellow\", shape: \"dot\", text: \"Reload | \" + settings[\"chart_name\"] });\n    createMessage(settings);\n}\nelse{\n    //node.status({fill:\"red\",shape:\"dot\",text:\"no action\"});\n    //node.warn(msg)\n    //do nothing\n}",
+            "outputs": 1,
             "timeout": 0,
             "noerr": 0,
             "initialize": "",
@@ -178,38 +151,11 @@
             "y": 80,
             "wires": [
                 [
-                    "b8ecba2191fe104f"
-                ],
-                [
                     "a4997c00a8d2d006"
                 ]
             ],
             "outputLabels": [
-                "Add",
-                "Create"
-            ]
-        },
-        {
-            "id": "b8ecba2191fe104f",
-            "type": "delay",
-            "z": "83d73bc419678fdc",
-            "name": "200ms",
-            "pauseType": "delayv",
-            "timeout": "200",
-            "timeoutUnits": "milliseconds",
-            "rate": "1",
-            "nbRateUnits": "1",
-            "rateUnits": "second",
-            "randomFirst": "1",
-            "randomLast": "5",
-            "randomUnits": "seconds",
-            "drop": false,
-            "allowrate": false,
-            "outputs": 1,
-            "x": 450,
-            "y": 60,
-            "wires": [
-                []
+                "Add"
             ]
         },
         {
@@ -221,7 +167,7 @@
                 "11466d0b8fefc464"
             ],
             "x": 440,
-            "y": 220,
+            "y": 180,
             "wires": [
                 []
             ]
@@ -232,7 +178,7 @@
             "z": "83d73bc419678fdc",
             "name": "10ms",
             "pauseType": "delayv",
-            "timeout": "10",
+            "timeout": "50",
             "timeoutUnits": "milliseconds",
             "rate": "1",
             "nbRateUnits": "1",
@@ -244,37 +190,20 @@
             "allowrate": false,
             "outputs": 1,
             "x": 450,
-            "y": 120,
+            "y": 80,
             "wires": [
                 []
             ]
         },
         {
-            "id": "849a3d66be0cb346",
+            "id": "bd3f60fe68c7e3f3",
             "type": "subflow:83d73bc419678fdc",
-            "z": "debe57df1350b9f8",
+            "z": "c49b3020b5a4b737",
             "name": "",
-            "env": [
-                {
-                    "name": "chart_name",
-                    "value": "x_chart",
-                    "type": "str"
-                },
-                {
-                    "name": "page",
-                    "value": "Acc_XYZ",
-                    "type": "str"
-                }
-            ],
-            "x": 670,
-            "y": 80,
+            "x": 430,
+            "y": 280,
             "wires": [
-                [
-                    "5724de7a73044d14"
-                ],
-                [
-                    "c7e61d2018f513ae"
-                ]
+                []
             ]
         }
     ]
