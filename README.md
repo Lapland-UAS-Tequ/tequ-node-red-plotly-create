@@ -7,7 +7,7 @@ Create Plotly.js chart.
 
 Run the following command in your Node-RED user directory - typically `~/.node-red`
 
-        npm install tequ-node-red-plotly-create
+        npm install Lapland-UAS-Tequ/tequ-node-red-plotly-create
 
 ## Information
 
